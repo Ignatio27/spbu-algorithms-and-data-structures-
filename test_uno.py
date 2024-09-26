@@ -5,13 +5,20 @@ import brands
 import tovar
 import time
 import pandas as pd
+ves_banks = [int(i) for i in input("Введите 3 веса для банков (Сбербанк, ВТБ, Т-Банк):  ").split()]
+ves_cards = [int(i) for i in input("Введите 3 веса для платежных систем (Visa, MasterCard, МИР): ").split()]
+while len(ves_cards)!=3 and len(ves_cards)!=3:
+    print("Вы ввели неккоретное число весов!")
+    ves_banks = [int(i) for i in input("Введите 3 веса для банков (Сбербанк, ВТБ, Т-Банк):  ").split()]
+    ves_cards = [int(i) for i in input("Введите 3 веса для платежных систем (Visa, MasterCard, МИР): ").split()]
+banks_1 = ["Сбербанк", "ВТБ", "Т-Банк"]
+pay_sistem_1 = ["Visa", "MasterCard", "МИР"]
 
-# Вводим вероятности для банков и платежных систем
-ves_banks = [int(i) for i in input("Введите 3 вероятности для банков: ").split()]
-ves_cards = [int(i) for i in input("Введите 3 вероятности для платежных систем: ").split()]
+n_rows = int(input("Введите количество строк (число большее 50 000): "))
+if n_rows< 50000:
+    print("Вы ввели число меньшее 50 000, поэтому число строк будет равно 50 000")
+    n_rows = 50000
 
-banks_1 = ["Sberbank", "VTB", "T-Bank"]  # Переименовали для удобства в XML
-pay_sistem_1 = ["Visa", "MasterCard", "MIR"]
 
 def weighted_choice(choices, weights):
     total = sum(weights)
@@ -23,9 +30,7 @@ def weighted_choice(choices, weights):
         upto += weight
     return choices[-1]
 
-n_rows = 50000
 p = time.time()
-
 def generate_random_date():
     start_date = datetime(2020, 1, 1)
     end_date = datetime(2024, 12, 31)
@@ -35,6 +40,7 @@ def generate_random_date():
     random_time = start_time + timedelta(seconds=random.randint(0, int((end_time - start_time).total_seconds())))
     return random_time
 
+
 def generate_random_cost(q):
     if q == 3:
         return random.randint(35000, 100000)
@@ -42,28 +48,29 @@ def generate_random_cost(q):
         return random.randint(6000, 35000)
     return random.randint(100, 6000)
 
+
 def generate_random_card_number():
-    pay_system = weighted_choice(pay_sistem_1, ves_cards)
-    bank = weighted_choice(banks_1, ves_banks)
+    pay_system = weighted_choice(pay_sistem_1,ves_cards)
+    bank = weighted_choice(banks_1,ves_banks)
     card_format = '{fig1} {fig2} {fig3} {fig4}'
 
-    if pay_system == 'MIR':
+    if pay_system == 'МИР':
         figures = {
-            'Sberbank': '2202',
-            'T-Bank': '2200',
-            'VTB': '2204'
+            'Сбербанк': '2202',
+            'Т-Банк': '2200',
+            'ВТБ': '2204'
         }.get(bank, '2206')
     elif pay_system == 'MasterCard':
         figures = {
-            'Sberbank': '5469',
-            'T-Bank': '5489',
-            'VTB': '5443'
+            'Сбербанк': '5469',
+            'Т-Банк': '5489',
+            'ВТБ': '5443'
         }.get(bank, '5406')
     else:
         figures = {
-            'Sberbank': '4276',
-            'T-Bank': '4277',
-            'VTB': '4272'
+            'Сбербанк': '4276',
+            'Т-Банк': '4277',
+            'ВТБ': '4272'
         }.get(bank, '4279')
 
     argz = {
@@ -73,6 +80,7 @@ def generate_random_card_number():
         'fig4': str(random.randint(1000, 9999))
     }
     return card_format.format(**argz)
+
 
 def generate_row():
     q = 0
@@ -97,21 +105,29 @@ def generate_row():
     cost = generate_random_cost(q) * quantity
 
     return {
-        "Store_Name": shope,  # Переименовали колонку
-        "Coordinates": f"{latitude},{longitude}",  # Переименовали и форматировали координаты
-        "Date_Time": date_time,  # Переименовали колонку
-        "Category": category,  # Переименовали колонку
-        "Brand": brand,  # Переименовали колонку
-        "Card_Number": card_number,  # Переименовали колонку
-        "Quantity": quantity,  # Переименовали колонку
-        "Cost": cost  # Переименовали колонку
+        "Название магазина": shope,
+        "Координаты" :  (latitude,longitude),
+        "Дата и время": date_time,
+        "Категория": category,
+        "Бренд": brand,
+        "Номер карточки": card_number,
+        "Количество товаров": quantity,
+        "Стоимость": cost
     }
 
-# Генерация данных
+
 data = [generate_row() for _ in range(n_rows)]
 df = pd.DataFrame(data)
-
-# Сохранение DataFrame в формате XML
-df.to_xml('dataset.xml', index=False, encoding='utf-8', root_name='purchases', row_name='purchase')
-
+df_renamed = df.rename(columns={
+    "Название магазина": "Store_Name",
+    "Дата и время": "Date_Time",
+    "Широта": "Latitude",
+    "Долгота": "Longitude",
+    "Категория": "Category",
+    "Бренд": "Brand",
+    "Номер карточки": "Card_Number",
+    "Количество товаров": "Quantity",
+    "Стоимость": "Cost"
+})
+df_renamed.to_xml('dataset.xml', index=False, encoding='utf-8', root_name='purchases', row_name='purchase')
 print("Время выполнения: ", time.time() - p)
