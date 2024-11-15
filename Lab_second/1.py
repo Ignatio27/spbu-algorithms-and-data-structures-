@@ -29,8 +29,7 @@ def anon_Date_Time():
     df_anon["Date_Time"] = df["Date_Time"].apply(lambda x: x.split("-")[0])
 
 
-# def anon_category():
-#     df_anon["Category"] = df["Category"].map(group_map)
+
 def anon_category():
     df_anon["Category"] ="***"
 
